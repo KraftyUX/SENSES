@@ -1,0 +1,269 @@
+"""
+prompty_senses.py
+~~~~~~~~~~~~~~~~~
+
+This module implements the SENSES (HSSTT) algorithm for evaluating the quality of AI-generated prompts
+based on user ratings and feedback. The algorithm computes five metaphorical sensory scores:
+
+- Hear: Measures the coherence and logical flow of responses.
+- See: Evaluates the structural clarity and organization of outputs.
+- Smell: Detects novelty and innovation through deviation patterns.
+- Touch: Assesses practical usability via application success rates.
+- Taste: Quantifies subjective user preference and satisfaction.
+
+The composite score is the arithmetic mean of these five sensory scores.
+"""
+
+from typing import Dict, List, Tuple, TypedDict, Optional
+import numpy as np
+import json
+import logging
+import unittest
+
+# Configure logging to track function calls and errors
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# TypedDict for input data structure
+class RatingsData(TypedDict, total=False):
+    """
+    TypedDict to define the structure of input ratings and feedback data.
+
+    Attributes:
+        coherence_ratings (List[float]): Scores for response coherence (0-1).
+        structural_feedback (List[float]): Scores for structural clarity (0-1).
+        novelty_indicators (List[float]): Deviation scores for novelty (e.g., z-scores).
+        application_successes (List[bool]): Boolean indicators of successful applications.
+        likability_scores (List[float]): Subjective ratings (1-5).
+        custom_metric (Optional[List[float]]): Placeholder for additional custom metrics.
+    """
+    coherence_ratings: List[float]
+    structural_feedback: List[float]
+    novelty_indicators: List[float]
+    application_successes: List[bool]
+    likability_scores: List[float]
+    custom_metric: Optional[List[float]]
+
+def remove_outliers(data_list: List[float], threshold: float = 3.0) -> List[float]:
+    """
+    Removes outliers from a list of numerical values using the Z-score method.
+
+    The Z-score measures how many standard deviations a value is from the mean.
+    Values with a Z-score beyond the threshold are considered outliers and removed.
+
+    Args:
+        data_list (List[float]): List of numerical values.
+        threshold (float): Z-score threshold for outlier detection. Defaults to 3.0.
+
+    Returns:
+        List[float]: List with outliers removed.
+    """
+    if len(data_list) < 2:
+        # If the list has fewer than 2 elements, outliers cannot be meaningfully detected
+        return data_list
+
+    # Convert the list to a NumPy array for vectorized operations
+    data_arr = np.array(data_list)
+    mean, std = np.mean(data_arr), np.std(data_arr)
+
+    # If the standard deviation is zero, all values are identical; no outliers
+    if std == 0:
+        return data_list
+
+    # Calculate Z-scores for all values
+    z_scores = np.abs((data_arr - mean) / (std + 1e-9))  # Add small value to avoid division by zero
+
+    # Filter out values with Z-scores beyond the threshold
+    return data_arr[z_scores <= threshold].tolist()
+
+def compute_senses(
+    ratings_data: RatingsData,
+    z_threshold: float = 3.0
+) -> Tuple[str, float]:
+    """
+    Computes the SENSES (HSSTT) scores from user ratings and feedback.
+
+    This function processes input data to derive metaphorical sensory scores,
+    applies outlier removal, and computes a composite quality metric.
+
+    Args:
+        ratings_data (RatingsData): Dictionary of user-provided metrics.
+        z_threshold (float): Custom Z-score threshold for outlier removal. Defaults to 3.0.
+
+    Returns:
+        Tuple[str, float]:
+            - JSON string of rounded SENSES scores.
+            - Composite score (arithmetic mean of all SENSES scores).
+
+    Raises:
+        RuntimeError: If input validation fails or unexpected errors occur.
+    """
+    logger.info("Starting SENSES computation with Z-threshold: %s", z_threshold)
+
+    try:
+        # --- Input Validation ---
+        if not isinstance(ratings_data, dict):
+            raise ValueError("ratings_data must be a dictionary")
+
+        # Check for missing required keys
+        required_keys = [
+            'coherence_ratings', 'structural_feedback',
+            'novelty_indicators', 'application_successes',
+            'likability_scores'
+        ]
+        missing_keys = [key for key in required_keys if key not in ratings_data]
+        if missing_keys:
+            raise ValueError(f"Missing required keys: {', '.join(missing_keys)}")
+
+        # --- Hear: Coherence ---
+        # Convert to NumPy array for vectorized operations
+        coherence = np.array(ratings_data['coherence_ratings'])
+
+        # Validate that all values are within the expected range [0, 1]
+        if not all(0 <= x <= 1 for x in coherence):
+            raise ValueError("coherence_ratings values must be between 0 and 1 inclusive")
+
+        # Remove outliers and compute the mean
+        coherence_clean = remove_outliers(coherence, z_threshold)
+        hear = float(np.mean(coherence_clean)) if len(coherence_clean) else 0.0
+
+        # --- See: Structural Feedback ---
+        structural = np.array(ratings_data['structural_feedback'])
+
+        # Validate that all values are within the expected range [0, 1]
+        if not all(0 <= x <= 1 for x in structural):
+            raise ValueError("structural_feedback values must be between 0 and 1 inclusive")
+
+        # Remove outliers and compute the mean
+        structural_clean = remove_outliers(structural, z_threshold)
+        see = float(np.mean(structural_clean)) if len(structural_clean) else 0.0
+
+        # --- Smell: Novelty ---
+        novelty = np.array(ratings_data['novelty_indicators'])
+
+        # Remove outliers and compute the mean of absolute values
+        novelty_clean = remove_outliers(novelty, z_threshold)
+        novelty_abs = np.abs(novelty_clean)
+
+        # Normalize the mean to [0, 1] by dividing by the maximum absolute value
+        max_abs = np.max(novelty_abs) if len(novelty_abs) and np.any(novelty_abs > 0) else 1.0
+        smell = float(np.mean(novelty_abs) / max_abs) if len(novelty_abs) else 0.0
+
+        # --- Touch: Success Rate ---
+        successes = ratings_data['application_successes']
+
+        # Validate that all values are boolean
+        if not all(isinstance(x, bool) for x in successes):
+            raise ValueError("application_successes must contain booleans")
+
+        # Compute the proportion of successful applications
+        touch = sum(successes) / len(successes) if successes else 0.0
+
+        # --- Taste: Likability ---
+        likability = np.array(ratings_data['likability_scores'])
+
+        # Validate that all values are within the expected range [1, 5]
+        if not all(1 <= x <= 5 for x in likability):
+            raise ValueError("likability_scores values must be between 1 and 5 inclusive")
+
+        # Remove outliers and normalize the mean to [0, 1]
+        likability_clean = remove_outliers(likability, z_threshold)
+        taste = float((np.mean(likability_clean) - 1) / 4) if len(likability_clean) else 0.0
+
+        # --- Composite Score ---
+        # Compute the arithmetic mean of all SENSES scores
+        hsstt_values = [hear, see, smell, touch, taste]
+        composite_score = float(np.mean(hsstt_values))
+
+        # --- Serialize Metadata ---
+        # Round scores to two decimal places and serialize as JSON
+        senses_metadata = {
+            "hear": round(hear, 2),
+            "see": round(see, 2),
+            "smell": round(smell, 2),
+            "touch": round(touch, 2),
+            "taste": round(taste, 2)
+        }
+        serialized_metadata = json.dumps(senses_metadata)
+
+        logger.info("SENSES computation completed. Composite score: %s", composite_score)
+        return serialized_metadata, composite_score
+
+    except (ValueError, TypeError) as e:
+        # Log and re-raise input validation errors
+        logger.error("Input validation error: %s", str(e))
+        raise RuntimeError(f"Error processing ratings_data: {str(e)}") from e
+    except Exception as e:
+        # Log and re-raise unexpected errors
+        logger.error("Unexpected error: %s", str(e))
+        raise RuntimeError(f"Unexpected error: {str(e)}") from e
+
+# --- Unit Tests ---
+class TestComputeSenses(unittest.TestCase):
+    """
+    Unit tests for the compute_senses function.
+    """
+
+    def setUp(self):
+        """Set up sample data for testing."""
+        self.sample_data = {
+            'coherence_ratings': [0.8, 0.9, 0.7],
+            'structural_feedback': [0.85, 0.75, 0.9],
+            'novelty_indicators': [1.2, 0.5, -0.3],
+            'application_successes': [True, True, False],
+            'likability_scores': [4.5, 5.0, 3.8]
+        }
+
+    def test_normal_case(self):
+        """Test the function with typical input data."""
+        metadata, composite = compute_senses(self.sample_data)
+        self.assertAlmostEqual(composite, 0.743, places=3)
+        self.assertEqual(
+            json.loads(metadata),
+            {"hear": 0.8, "see": 0.83, "smell": 0.56, "touch": 0.67, "taste": 0.86}
+        )
+
+    def test_empty_lists(self):
+        """Test the function with empty input lists."""
+        data = {
+            'coherence_ratings': [],
+            'structural_feedback': [],
+            'novelty_indicators': [],
+            'application_successes': [],
+            'likability_scores': []
+        }
+        metadata, composite = compute_senses(data)
+        self.assertEqual(composite, 0.0)
+        self.assertEqual(
+            json.loads(metadata),
+            {"hear": 0.0, "see": 0.0, "smell": 0.0, "touch": 0.0, "taste": 0.0}
+        )
+
+    def test_extreme_outliers(self):
+        """Test the function with extreme outliers."""
+        data = {
+            'coherence_ratings': [0.8, 0.9, 1e6],
+            'structural_feedback': [0.85, 0.75, 0.9],
+            'novelty_indicators': [1.2, 0.5, -1e6],
+            'application_successes': [True, True, False],
+            'likability_scores': [4.5, 5.0, 1e6]
+        }
+        metadata, composite = compute_senses(data)
+        self.assertAlmostEqual(json.loads(metadata)['hear'], 0.85, places=2)
+        self.assertAlmostEqual(json.loads(metadata)['taste'], 0.94, places=2)
+
+    def test_custom_z_threshold(self):
+        """Test the function with a custom Z-score threshold."""
+        data = {
+            'coherence_ratings': [0.8, 0.9, 2.0],  # 2.0 is an outlier with threshold=1.5
+            'structural_feedback': [0.85, 0.75, 0.9],
+            'novelty_indicators': [1.2, 0.5, -0.3],
+            'application_successes': [True, True, False],
+            'likability_scores': [4.5, 5.0, 3.8]
+        }
+        metadata, composite = compute_senses(data, z_threshold=1.5)
+        self.assertAlmostEqual(json.loads(metadata)['hear'], 0.85, places=2)
+
+if __name__ == '__main__':
+    # Run unit tests if the script is executed directly
+    unittest.main()
