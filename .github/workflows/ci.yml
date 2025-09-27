@@ -35,5 +35,7 @@ jobs:
           black --version
           black --check .
       - name: Run tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}
         run: |
-          python -m unittest discover -v
+          python -m unittest discover -s tests -t . -v
