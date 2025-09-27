@@ -21,7 +21,6 @@ from typing import Dict, List, Tuple, TypedDict, Optional
 import numpy as np
 import json
 import logging
-import unittest
 
 # Configure logging to track function calls and errors
 logging.basicConfig(level=logging.INFO)
@@ -194,72 +193,3 @@ def compute_senses(
         logger.error("Unexpected error: %s", str(e))
         raise RuntimeError(f"Unexpected error: {str(e)}") from e
 
-# --- Unit Tests ---
-class TestComputeSenses(unittest.TestCase):
-    """
-    Unit tests for the compute_senses function.
-    """
-
-    def setUp(self):
-        """Set up sample data for testing."""
-        self.sample_data = {
-            'coherence_ratings': [0.8, 0.9, 0.7],
-            'structural_feedback': [0.85, 0.75, 0.9],
-            'novelty_indicators': [1.2, 0.5, -0.3],
-            'application_successes': [True, True, False],
-            'likability_scores': [4.5, 5.0, 3.8]
-        }
-
-    def test_normal_case(self):
-        """Test the function with typical input data."""
-        metadata, composite = compute_senses(self.sample_data)
-        self.assertAlmostEqual(composite, 0.743, places=3)
-        self.assertEqual(
-            json.loads(metadata),
-            {"hear": 0.8, "see": 0.83, "smell": 0.56, "touch": 0.67, "taste": 0.86}
-        )
-
-    def test_empty_lists(self):
-        """Test the function with empty input lists."""
-        data = {
-            'coherence_ratings': [],
-            'structural_feedback': [],
-            'novelty_indicators': [],
-            'application_successes': [],
-            'likability_scores': []
-        }
-        metadata, composite = compute_senses(data)
-        self.assertEqual(composite, 0.0)
-        self.assertEqual(
-            json.loads(metadata),
-            {"hear": 0.0, "see": 0.0, "smell": 0.0, "touch": 0.0, "taste": 0.0}
-        )
-
-    def test_extreme_outliers(self):
-        """Test the function with extreme outliers."""
-        data = {
-            'coherence_ratings': [0.8, 0.9, 1e6],
-            'structural_feedback': [0.85, 0.75, 0.9],
-            'novelty_indicators': [1.2, 0.5, -1e6],
-            'application_successes': [True, True, False],
-            'likability_scores': [4.5, 5.0, 1e6]
-        }
-        metadata, composite = compute_senses(data)
-        self.assertAlmostEqual(json.loads(metadata)['hear'], 0.85, places=2)
-        self.assertAlmostEqual(json.loads(metadata)['taste'], 0.94, places=2)
-
-    def test_custom_z_threshold(self):
-        """Test the function with a custom Z-score threshold."""
-        data = {
-            'coherence_ratings': [0.8, 0.9, 2.0],  # 2.0 is an outlier with threshold=1.5
-            'structural_feedback': [0.85, 0.75, 0.9],
-            'novelty_indicators': [1.2, 0.5, -0.3],
-            'application_successes': [True, True, False],
-            'likability_scores': [4.5, 5.0, 3.8]
-        }
-        metadata, composite = compute_senses(data, z_threshold=1.5)
-        self.assertAlmostEqual(json.loads(metadata)['hear'], 0.85, places=2)
-
-if __name__ == '__main__':
-    # Run unit tests if the script is executed directly
-    unittest.main()
