@@ -1,4 +1,4 @@
-from prompty_senses import compute_senses
+from senses import compute_senses
 
 data = {
     'coherence_ratings': [0.8, 0.9, 0.7],

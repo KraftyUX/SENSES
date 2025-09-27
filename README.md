@@ -1,5 +1,8 @@
 # SENSES (HSSTT) Algorithm
 
+[![CI](https://github.com/KraftyUX/SENSES/actions/workflows/ci.yml/badge.svg)](https://github.com/KraftyUX/SENSES/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 This repository contains a Python implementation of the SENSES algorithm for evaluating the quality of AI-generated prompts using five metaphorical sensory scores:
 - Hear: coherence and logical flow
 - See: structural clarity and organization
@@ -46,6 +49,9 @@ metadata_json, composite = compute_senses(ratings, z_threshold=2.0)
 
 ## Running tests
 - python -m unittest discover -v
+
+## Utilities
+- PowerShell setup: `./prepare_repo.ps1 -CreateVenv`
 
 ## Project layout
 - senses.py: main module (includes logging and input validation)

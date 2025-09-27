@@ -1,7 +1,7 @@
 # Prompty SENSES Algorithm
 
-[![Test and Profile](https://github.com/yourusername/prompty-senses/actions/workflows/test_and_profile.yml/badge.svg)](https://github.com/yourusername/prompty-senses/actions/workflows/test_and_profile.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![CI](https://github.com/KraftyUX/SENSES/actions/workflows/ci.yml/badge.svg)](https://github.com/KraftyUX/SENSES/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **Prompty SENSES** is an open-source Python algorithm for evaluating AI prompt quality using metaphorical sensory scores (HSSTT: Hear, See, Smell, Touch, Taste). It aggregates user ratings and feedback to compute a composite quality metric, with robust outlier removal and normalization.
 
@@ -30,6 +30,6 @@
 ### Install the Package
 
 ```bash
-git clone https://github.com/yourusername/prompty-senses.git
-cd prompty-senses
+git clone https://github.com/KraftyUX/SENSES.git
+cd SENSES
 pip install -r requirements.txt
