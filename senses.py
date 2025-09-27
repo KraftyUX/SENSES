@@ -116,26 +116,20 @@ def compute_senses(
             raise ValueError(f"Missing required keys: {', '.join(missing_keys)}")
 
         # --- Hear: Coherence ---
-        # Convert to NumPy array for vectorized operations
-        coherence = np.array(ratings_data['coherence_ratings'])
-
-        # Validate that all values are within the expected range [0, 1]
-        if not all(0 <= x <= 1 for x in coherence):
-            raise ValueError("coherence_ratings values must be between 0 and 1 inclusive")
+        # Convert to NumPy array and filter invalid values outside [0, 1]
+        coherence_arr = np.array(ratings_data['coherence_ratings'], dtype=float)
+        coherence_filtered = coherence_arr[(coherence_arr >= 0) & (coherence_arr <= 1)].tolist()
 
         # Remove outliers and compute the mean
-        coherence_clean = remove_outliers(coherence, z_threshold)
+        coherence_clean = remove_outliers(coherence_filtered, z_threshold)
         hear = float(np.mean(coherence_clean)) if len(coherence_clean) else 0.0
 
         # --- See: Structural Feedback ---
-        structural = np.array(ratings_data['structural_feedback'])
-
-        # Validate that all values are within the expected range [0, 1]
-        if not all(0 <= x <= 1 for x in structural):
-            raise ValueError("structural_feedback values must be between 0 and 1 inclusive")
+        structural_arr = np.array(ratings_data['structural_feedback'], dtype=float)
+        structural_filtered = structural_arr[(structural_arr >= 0) & (structural_arr <= 1)].tolist()
 
         # Remove outliers and compute the mean
-        structural_clean = remove_outliers(structural, z_threshold)
+        structural_clean = remove_outliers(structural_filtered, z_threshold)
         see = float(np.mean(structural_clean)) if len(structural_clean) else 0.0
 
         # --- Smell: Novelty ---
@@ -160,14 +154,13 @@ def compute_senses(
         touch = sum(successes) / len(successes) if successes else 0.0
 
         # --- Taste: Likability ---
-        likability = np.array(ratings_data['likability_scores'])
+        likability_arr = np.array(ratings_data['likability_scores'], dtype=float)
 
-        # Validate that all values are within the expected range [1, 5]
-        if not all(1 <= x <= 5 for x in likability):
-            raise ValueError("likability_scores values must be between 1 and 5 inclusive")
+        # Filter invalid values outside [1, 5]
+        likability_filtered = likability_arr[(likability_arr >= 1) & (likability_arr <= 5)].tolist()
 
         # Remove outliers and normalize the mean to [0, 1]
-        likability_clean = remove_outliers(likability, z_threshold)
+        likability_clean = remove_outliers(likability_filtered, z_threshold)
         taste = float((np.mean(likability_clean) - 1) / 4) if len(likability_clean) else 0.0
 
         # --- Composite Score ---
