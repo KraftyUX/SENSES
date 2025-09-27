@@ -21,11 +21,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install ruff black mypy
+          pip install ruff mypy "black[jupyter]"
       - name: Lint (ruff)
         run: |
           ruff --version
-          ruff .
+          ruff check --fix .
       - name: Type check (mypy)
         run: |
           mypy --version
