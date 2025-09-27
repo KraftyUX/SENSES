@@ -5,8 +5,9 @@
 senses.py
 ~~~~~~~~~
 
-This module implements the SENSES (HSSTT) algorithm for evaluating the quality of AI-generated prompts
-based on user ratings and feedback. The algorithm computes five metaphorical sensory scores:
+This module implements the SENSES (HSSTT) algorithm for evaluating the quality of
+AI-generated prompts based on user ratings and feedback. The algorithm computes five
+metaphorical sensory scores:
 
 - Hear: Measures the coherence and logical flow of responses.
 - See: Evaluates the structural clarity and organization of outputs.
@@ -17,14 +18,16 @@ based on user ratings and feedback. The algorithm computes five metaphorical sen
 The composite score is the arithmetic mean of these five sensory scores.
 """
 
-from typing import Dict, List, Tuple, TypedDict, Optional
-import numpy as np
 import json
 import logging
+from typing import Optional, TypedDict
+
+import numpy as np
 
 # Configure logging to track function calls and errors
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 # TypedDict for input data structure
 class RatingsData(TypedDict, total=False):
@@ -32,21 +35,23 @@ class RatingsData(TypedDict, total=False):
     TypedDict to define the structure of input ratings and feedback data.
 
     Attributes:
-        coherence_ratings (List[float]): Scores for response coherence (0-1).
-        structural_feedback (List[float]): Scores for structural clarity (0-1).
-        novelty_indicators (List[float]): Deviation scores for novelty (e.g., z-scores).
-        application_successes (List[bool]): Boolean indicators of successful applications.
-        likability_scores (List[float]): Subjective ratings (1-5).
-        custom_metric (Optional[List[float]]): Placeholder for additional custom metrics.
+        coherence_ratings (list[float]): Scores for response coherence (0-1).
+        structural_feedback (list[float]): Scores for structural clarity (0-1).
+        novelty_indicators (list[float]): Deviation scores for novelty (e.g., z-scores).
+        application_successes (list[bool]): Boolean indicators of successful applications.
+        likability_scores (list[float]): Subjective ratings (1-5).
+        custom_metric (Optional[list[float]]): Placeholder for additional custom metrics.
     """
-    coherence_ratings: List[float]
-    structural_feedback: List[float]
-    novelty_indicators: List[float]
-    application_successes: List[bool]
-    likability_scores: List[float]
-    custom_metric: Optional[List[float]]
 
-def remove_outliers(data_list: List[float], threshold: float = 3.0) -> List[float]:
+    coherence_ratings: list[float]
+    structural_feedback: list[float]
+    novelty_indicators: list[float]
+    application_successes: list[bool]
+    likability_scores: list[float]
+    custom_metric: Optional[list[float]]
+
+
+def remove_outliers(data_list: list[float], threshold: float = 3.0) -> list[float]:
     """
     Removes outliers from a list of numerical values using the Z-score method.
 
@@ -78,10 +83,8 @@ def remove_outliers(data_list: List[float], threshold: float = 3.0) -> List[floa
     # Filter out values with Z-scores beyond the threshold
     return data_arr[z_scores <= threshold].tolist()
 
-def compute_senses(
-    ratings_data: RatingsData,
-    z_threshold: float = 3.0
-) -> Tuple[str, float]:
+
+def compute_senses(ratings_data: RatingsData, z_threshold: float = 3.0) -> tuple[str, float]:
     """
     Computes the SENSES (HSSTT) scores from user ratings and feedback.
 
@@ -109,9 +112,11 @@ def compute_senses(
 
         # Check for missing required keys
         required_keys = [
-            'coherence_ratings', 'structural_feedback',
-            'novelty_indicators', 'application_successes',
-            'likability_scores'
+            "coherence_ratings",
+            "structural_feedback",
+            "novelty_indicators",
+            "application_successes",
+            "likability_scores",
         ]
         missing_keys = [key for key in required_keys if key not in ratings_data]
         if missing_keys:
@@ -119,7 +124,7 @@ def compute_senses(
 
         # --- Hear: Coherence ---
         # Convert to NumPy array and filter invalid values outside [0, 1]
-        coherence_arr = np.array(ratings_data['coherence_ratings'], dtype=float)
+        coherence_arr = np.array(ratings_data["coherence_ratings"], dtype=float)
         coherence_filtered = coherence_arr[(coherence_arr >= 0) & (coherence_arr <= 1)].tolist()
 
         # Remove outliers and compute the mean
@@ -127,7 +132,7 @@ def compute_senses(
         hear = float(np.mean(coherence_clean)) if len(coherence_clean) else 0.0
 
         # --- See: Structural Feedback ---
-        structural_arr = np.array(ratings_data['structural_feedback'], dtype=float)
+        structural_arr = np.array(ratings_data["structural_feedback"], dtype=float)
         structural_filtered = structural_arr[(structural_arr >= 0) & (structural_arr <= 1)].tolist()
 
         # Remove outliers and compute the mean
@@ -135,7 +140,7 @@ def compute_senses(
         see = float(np.mean(structural_clean)) if len(structural_clean) else 0.0
 
         # --- Smell: Novelty ---
-        novelty = np.array(ratings_data['novelty_indicators'])
+        novelty = np.array(ratings_data["novelty_indicators"])
 
         # Remove outliers and compute the mean of absolute values
         novelty_clean = remove_outliers(novelty, z_threshold)
@@ -146,7 +151,7 @@ def compute_senses(
         smell = float(np.mean(novelty_abs) / max_abs) if len(novelty_abs) else 0.0
 
         # --- Touch: Success Rate ---
-        successes = ratings_data['application_successes']
+        successes = ratings_data["application_successes"]
 
         # Validate that all values are boolean
         if not all(isinstance(x, bool) for x in successes):
@@ -156,7 +161,7 @@ def compute_senses(
         touch = sum(successes) / len(successes) if successes else 0.0
 
         # --- Taste: Likability ---
-        likability_arr = np.array(ratings_data['likability_scores'], dtype=float)
+        likability_arr = np.array(ratings_data["likability_scores"], dtype=float)
 
         # Filter invalid values outside [1, 5]
         likability_filtered = likability_arr[(likability_arr >= 1) & (likability_arr <= 5)].tolist()
@@ -177,7 +182,7 @@ def compute_senses(
             "see": round(see, 2),
             "smell": round(smell, 2),
             "touch": round(touch, 2),
-            "taste": round(taste, 2)
+            "taste": round(taste, 2),
         }
         serialized_metadata = json.dumps(senses_metadata)
 
@@ -192,4 +197,3 @@ def compute_senses(
         # Log and re-raise unexpected errors
         logger.error("Unexpected error: %s", str(e))
         raise RuntimeError(f"Unexpected error: {str(e)}") from e
-

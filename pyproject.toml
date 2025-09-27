@@ -37,14 +37,15 @@ target-version = ["py39", "py310", "py311", "py312"]
 [tool.ruff]
 line-length = 100
 target-version = "py39"
+
+[tool.ruff.lint]
 select = [
   "E",  # pycodestyle (errors)
   "F",  # pyflakes
   "I",  # isort
   "UP", # pyupgrade
 ]
-ignore = [
-]
+ignore = []
 
 [tool.ruff.format]
 quote-style = "double"
