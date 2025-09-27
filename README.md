@@ -80,6 +80,9 @@ black --check .
 python -m unittest discover -v
 ```
 
+## Examples
+- See examples/senses_demo.ipynb for a quick walkthrough.
+
 ## Project layout
 - senses.py: main module (logging, validation, outlier handling)
 - tests/: unit tests (unittest-discoverable)

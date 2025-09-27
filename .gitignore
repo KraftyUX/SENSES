@@ -62,6 +62,7 @@ venv.bak/
 # Tool caches
 .ruff_cache/
 .mypy_cache/
+.ipynb_checkpoints/
 
 # Profiling
 profile.prof
