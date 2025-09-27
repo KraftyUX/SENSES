@@ -59,6 +59,10 @@ venv.bak/
 *.swp
 *.swo
 
+# Tool caches
+.ruff_cache/
+.mypy_cache/
+
 # Profiling
 profile.prof
 
@@ -67,3 +71,6 @@ profile.prof
 *.json
 *.db
 *.sqlite
+
+# Ignore accidental nested repo folder
+/SENSES/

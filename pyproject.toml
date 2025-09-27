@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "senses"
+version = "0.1.0"
+description = "SENSES (HSSTT) algorithm: quantify AI prompt/response quality using Hear/See/Smell/Touch/Taste"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [
+  { name = "KraftyUX" }
+]
+license = { text = "MIT" }
+dependencies = [
+  "numpy>=1.21.0",
+]
+keywords = ["ai", "nlp", "evaluation", "metrics", "prompt", "quality", "hsstt"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+[project.urls]
+Homepage = "https://github.com/KraftyUX/SENSES"
+Repository = "https://github.com/KraftyUX/SENSES"
+Issues = "https://github.com/KraftyUX/SENSES/issues"
+
+[tool.black]
+line-length = 100
+target-version = ["py39", "py310", "py311", "py312"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+select = [
+  "E",  # pycodestyle (errors)
+  "F",  # pyflakes
+  "I",  # isort
+  "UP", # pyupgrade
+]
+ignore = [
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
