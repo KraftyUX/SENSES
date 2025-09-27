@@ -63,4 +63,4 @@ metadata_json, composite = compute_senses(ratings, z_threshold=2.0)
 4) Draft a new Release on GitHub using tag v0.1.0 and summarize changes from CHANGELOG.md
 
 ## License
-To be added. Please choose a license (MIT, Apache-2.0, GPL-3.0, or other).
+MIT License — see LICENSE for details.
