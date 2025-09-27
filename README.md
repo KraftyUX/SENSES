@@ -1,9 +1,9 @@
-# Prompty SENSES Algorithm
+# SENSES Algorithm
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)
 
-**Prompty SENSES** is a Python module that implements the **SENSES (HSSTT) algorithm** for evaluating the quality of AI-generated prompts based on user ratings and feedback. The algorithm computes five metaphorical sensory scores—**Hear, See, Smell, Touch, Taste**—and a composite score as their arithmetic mean.
+SENSES is a Python module that implements the **SENSES (HSSTT) algorithm** for evaluating the quality of AI-generated prompts based on user ratings and feedback. The algorithm computes five metaphorical sensory scores—**Hear, See, Smell, Touch, Taste**—and a composite score as their arithmetic mean.
 
 ---
 
@@ -31,15 +31,15 @@
 ### **Install the Package**
 
 ```bash
-git clone https://github.com/yourusername/prompty-senses.git
-cd prompty-senses
+git clone https://github.com/KraftyUX/SENSES.git
+cd SENSES
 pip install -r requirements.txt
 ```
 
 Or install directly from PyPI (if published):
 
 ```bash
-pip install prompty-senses
+pip install senses
 ```
 
 ---
@@ -49,7 +49,7 @@ pip install prompty-senses
 ### **Basic Example**
 
 ```python
-from prompty_senses import compute_senses
+from senses import compute_senses
 
 data = {
     'coherence_ratings': [0.8, 0.9, 0.7],
@@ -147,4 +147,4 @@ For questions or feedback, please open an issue or contact [KraftyUX](mailto:you
 
 ---
 
-This `README.md` provides a clear and comprehensive overview of your project, making it easy for users and contributors to understand and use the **Prompty SENSES** algorithm.
+This `README.md` provides a clear and comprehensive overview of your project, making it easy for users and contributors to understand and use the **SENSES** algorithm.

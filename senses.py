@@ -2,8 +2,8 @@
 # Copyright (c) 2025 KraftyUX
 
 """
-prompty_senses.py
-~~~~~~~~~~~~~~~~~
+senses.py
+~~~~~~~~~
 
 This module implements the SENSES (HSSTT) algorithm for evaluating the quality of AI-generated prompts
 based on user ratings and feedback. The algorithm computes five metaphorical sensory scores:
