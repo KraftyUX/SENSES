@@ -1,5 +1,6 @@
 # SENSES Algorithm
 
+[![CI](https://github.com/KraftyUX/SENSES/actions/workflows/ci.yml/badge.svg)](https://github.com/KraftyUX/SENSES/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)
 
@@ -137,14 +138,13 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 
 ## **Contributing**
 
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Contributions are welcome! Please see [CONTRIBUTIONS.md](CONTRIBUTIONS.md) for guidelines.
 
 ---
 
 ## **Contact**
 
-For questions or feedback, please open an issue or contact [KraftyUX](mailto:your.email@example.com).
+For questions or feedback, please open an issue or contact [KraftyUX](mailto:kraftyux@gmail.com).
 
 ---
 
-This `README.md` provides a clear and comprehensive overview of your project, making it easy for users and contributors to understand and use the **SENSES** algorithm.
