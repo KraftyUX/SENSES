@@ -140,10 +140,10 @@ def compute_senses(ratings_data: RatingsData, z_threshold: float = 3.0) -> tuple
         see = float(np.mean(structural_clean)) if len(structural_clean) else 0.0
 
         # --- Smell: Novelty ---
-        novelty = np.array(ratings_data["novelty_indicators"])
+        novelty = np.array(ratings_data['novelty_indicators'], dtype=float)
 
         # Remove outliers and compute the mean of absolute values
-        novelty_clean = remove_outliers(novelty, z_threshold)
+        novelty_clean = remove_outliers(novelty.tolist(), z_threshold)
         novelty_abs = np.abs(novelty_clean)
 
         # Normalize the mean to [0, 1] by dividing by the maximum absolute value
